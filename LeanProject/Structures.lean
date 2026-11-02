@@ -89,12 +89,14 @@ class MulGroup (α : Type u) extends MulMonoid α, MulInvertible α
 
 class MulAbelianGroup (α : Type u) extends MulGroup α, MulCommutative α
 
-class Semiring (α : Type u) extends AddMonoid α, AddCommutative α, MulMonoid α where
+class Rig (α : Type u) extends AddMonoid α, AddCommutative α, MulMonoid α where
   left_distrib  : ∀ a b c : α, a * (b + c) = a * b + a * c
   right_distrib : ∀ a b c : α, (a + b) * c = a * c + b * c
+
+class Semiring (α : Type u) extends Rig α where
   zero_absorbs : ∀ a : α, a * zero = zero ∧ zero * a = zero
 
-class Ring (α : Type u) extends Semiring α, AddInvertible α where
+class Ring (α : Type u) extends Semiring α, AddInvertible α
 
 structure Pair (α : Type u) (β : Type u) where
   fst : α
@@ -117,7 +119,7 @@ theorem ring_zero_absorbs [Ring α] (a : α) : a * AddIdent.zero = AddIdent.zero
   ·
     obtain ⟨a0i, h_left, h_right⟩ := AddInvertible.inverses (a*AddIdent.zero)
     have h1 :
-      a*AddIdent.zero = a*AddIdent.zero + a*AddIdent.zero := by rw [← Semiring.left_distrib, (AddIdent.zero_ident _).left]
+      a*AddIdent.zero = a*AddIdent.zero + a*AddIdent.zero := by rw [← Rig.left_distrib, (AddIdent.zero_ident _).left]
     symm
     calc
       AddIdent.zero = a*(AddIdent.zero:α)+a0i := by rw [h_left]
@@ -128,7 +130,7 @@ theorem ring_zero_absorbs [Ring α] (a : α) : a * AddIdent.zero = AddIdent.zero
   ·
     obtain ⟨a0i, h_left, h_right⟩ := AddInvertible.inverses (AddIdent.zero*a)
     have h1 :
-      AddIdent.zero*a = AddIdent.zero*a + AddIdent.zero*a := by rw [← Semiring.right_distrib, (AddIdent.zero_ident _).left]
+      AddIdent.zero*a = AddIdent.zero*a + AddIdent.zero*a := by rw [← Rig.right_distrib, (AddIdent.zero_ident _).left]
     symm
     calc
       AddIdent.zero = (AddIdent.zero:α)*a+a0i := by rw [h_left]
@@ -137,6 +139,8 @@ theorem ring_zero_absorbs [Ring α] (a : α) : a * AddIdent.zero = AddIdent.zero
       _             = AddIdent.zero*a+AddIdent.zero := by rw [h_left]
       _             = AddIdent.zero*a := by rw [(AddIdent.zero_ident _).right]
 
+instance [Ring α] : Semiring α where
+  zero_absorbs := ring_zero_absorbs
 
 
 
