@@ -1,5 +1,6 @@
 import LeanProject.Structures
 import LeanProject.Nat
+import LeanProject.Ring
 
 namespace Project
 
@@ -52,6 +53,174 @@ theorem intEquivalence_equivalence : Equivalence intEquivalence := by
 
 def Z := Quot intEquivalence
 
+instance : AddMonoid (Pair N N) where
+  zero := {fst := AddIdent.zero, snd := AddIdent.zero}
+  add a b := {fst := a.fst + b.fst, snd := a.snd + b.snd}
+  zero_ident a := by
+    dsimp
+    rw [AddCommutative.commutative]
+    rw [AddCommutative.commutative AddIdent.zero]
+    rw [p_and_p]
+    rw [(AddIdent.zero_ident a.fst).right]
+    rw [(AddIdent.zero_ident a.snd).right]
+  add_associative a b c := by
+    dsimp
+    rw [AddAssociative.add_associative]
+    rw [AddAssociative.add_associative a.snd]
+
+instance : MulMonoid (Pair N N) where
+  one  := {fst := MulIdent.one,  snd := AddIdent.zero}
+  mul a b := {fst := a.fst * b.fst + a.snd * b.snd, snd := a.fst * b.snd + a.snd * b.fst}
+  one_ident a := by
+    dsimp
+    rw [(Semiring.zero_absorbs a.snd).right]
+    rw [(Semiring.zero_absorbs a.snd).left]
+    rw [(Semiring.zero_absorbs a.fst).right]
+    rw [(Semiring.zero_absorbs a.fst).left]
+    rw [(AddIdent.zero_ident _).left]
+    rw [(AddIdent.zero_ident _).right]
+    rw [(AddIdent.zero_ident _).right]
+    rw [(AddIdent.zero_ident _).right]
+    rw [MulCommutative.commutative]
+    rw [MulCommutative.commutative MulIdent.one]
+    rw [p_and_p]
+    rw [(MulIdent.one_ident a.fst).right]
+    rw [(MulIdent.one_ident a.snd).right]
+  mul_associative a b c := by
+    dsimp
+    have h (c1 c2 : N): (a.fst*b.fst+a.snd*b.snd)*c1+(a.fst*b.snd+a.snd*b.fst)*c2 = a.fst*(b.fst*c1+b.snd*c2)+a.snd*(b.fst*c2+b.snd*c1) := by
+      calc
+        (a.fst*b.fst+a.snd*b.snd)*c1+(a.fst*b.snd+a.snd*b.fst)*c2
+          = (((a.fst*b.fst)*c1)+((a.snd*b.snd)*c1))+(a.fst*b.snd+a.snd*b.fst)*c2         := by rw[Rig.right_distrib]
+        _ = (a.fst*b.fst)*c1+(((a.snd*b.snd)*c1)+(a.fst*b.snd+a.snd*b.fst)*c2)           := by rw[AddAssociative.add_associative]
+        _ = (a.fst*b.fst)*c1+((a.fst*b.snd+a.snd*b.fst)*c2+((a.snd*b.snd)*c1))           := by rw[AddCommutative.commutative ((a.snd*b.snd)*c1)]
+        _ = (a.fst*b.fst)*c1+(((a.fst*b.snd)*c2+(a.snd*b.fst)*c2)+((a.snd*b.snd)*c1)) := by rw[Rig.right_distrib]
+        _ = ((a.fst*b.fst)*c1+((a.fst*b.snd)*c2+(a.snd*b.fst)*c2))+((a.snd*b.snd)*c1) := by rw[AddAssociative.add_associative ((a.fst*b.fst)*c1)]
+        _ = (((a.fst*b.fst)*c1+(a.fst*b.snd)*c2)+(a.snd*b.fst)*c2)+((a.snd*b.snd)*c1) := by rw[← AddAssociative.add_associative ((a.fst*b.fst)*c1)]
+        _ = ((a.fst*(b.fst*c1)+a.fst*(b.snd*c2))+(a.snd*b.fst)*c2)+((a.snd*b.snd)*c1) := by rw[← MulAssociative.mul_associative a.fst, ← MulAssociative.mul_associative a.fst]
+        _ = ((a.fst*(b.fst*c1+b.snd*c2))+(a.snd*b.fst)*c2)+((a.snd*b.snd)*c1)         := by rw[← Rig.left_distrib]
+        _ = (a.fst*(b.fst*c1+b.snd*c2))+((a.snd*b.fst)*c2+((a.snd*b.snd)*c1))         := by rw[AddAssociative.add_associative]
+        _ = (a.fst*(b.fst*c1+b.snd*c2))+(a.snd*(b.fst*c2)+(a.snd*(b.snd*c1)))         := by rw[← MulAssociative.mul_associative a.snd, ← MulAssociative.mul_associative a.snd]
+        _ = (a.fst*(b.fst*c1+b.snd*c2))+(a.snd*(b.fst*c2+b.snd*c1))                   := by rw[← Rig.left_distrib]
+    rw [h]
+    rw [h]
+
+instance : AddCommutative (Pair N N) where
+  commutative a b := by
+    change {fst := a.fst + b.fst, snd := a.snd + b.snd : Pair N N} = {fst := b.fst + a.fst, snd := b.snd + a.snd}
+    rw [AddCommutative.commutative]
+    rw [AddCommutative.commutative b.snd]
+
+instance : MulCommutative (Pair N N) where
+  commutative a b := by
+    change
+    { fst := a.fst * b.fst + a.snd * b.snd, snd := a.fst * b.snd + a.snd * b.fst : Pair N N}
+    = { fst := b.fst * a.fst + b.snd * a.snd, snd := b.fst * a.snd + b.snd * a.fst }
+    rw [MulCommutative.commutative]
+    rw [MulCommutative.commutative a.snd]
+    rw [MulCommutative.commutative a.fst]
+    rw [MulCommutative.commutative a.snd]
+    rw [AddCommutative.commutative (b.fst*a.snd)]
+
+theorem N2_left_distrib (a b c : Pair N N) : a * (b + c) = a * b + a * c := by
+  change { fst := (a.fst * (b.fst + c.fst)) + (a.snd * (b.snd + c.snd)), snd := (a.fst * (b.snd + c.snd)) + (a.snd * (b.fst + c.fst)) : Pair N N} = { fst := ((a.fst * b.fst) + (a.snd * b.snd)) + ((a.fst * c.fst) + (a.snd * c.snd)), snd := ((a.fst * b.snd) + (a.snd * b.fst)) + ((a.fst * c.snd) + (a.snd * c.fst)) }
+  rw [Rig.left_distrib]
+  rw [Rig.left_distrib]
+  rw [Rig.left_distrib]
+  rw [Rig.left_distrib]
+  rw [AddAssociative.add_associative]
+  rw [AddAssociative.add_associative]
+  rw [← AddAssociative.add_associative (a.fst*c.fst)]
+  rw [← AddAssociative.add_associative (a.fst*c.snd)]
+  rw [AddCommutative.commutative (a.fst*c.fst)]
+  rw [AddCommutative.commutative (a.fst*c.snd)]
+  rw [← AddAssociative.add_associative]
+  rw [← AddAssociative.add_associative]
+  rw [← AddAssociative.add_associative]
+  rw [← AddAssociative.add_associative]
+  rw [AddAssociative.add_associative (a.fst*b.fst+a.snd*b.snd)]
+  rw [AddAssociative.add_associative (a.fst*b.snd+a.snd*b.fst)]
+
+instance : Semiring (Pair N N) where
+  left_distrib := N2_left_distrib
+  right_distrib a b c := by
+    rw [MulCommutative.commutative]
+    rw [N2_left_distrib]
+    rw [MulCommutative.commutative]
+    rw [MulCommutative.commutative c]
+  zero_absorbs a := by
+    constructor
+    · change {fst := a.fst*AddIdent.zero + a.snd*AddIdent.zero, snd := a.fst*AddIdent.zero + a.snd*AddIdent.zero : Pair N N} = {fst := AddIdent.zero, snd := AddIdent.zero}
+      rw [(Semiring.zero_absorbs _).left]
+      rw [(Semiring.zero_absorbs _).left]
+      rw [(AddIdent.zero_ident _).left]
+    · change {fst := AddIdent.zero*a.fst + AddIdent.zero*a.snd, snd := AddIdent.zero*a.snd + AddIdent.zero*a.fst : Pair N N} = {fst := AddIdent.zero, snd := AddIdent.zero}
+      rw [(Semiring.zero_absorbs _).right]
+      rw [(Semiring.zero_absorbs _).right]
+      rw [(AddIdent.zero_ident _).left]
+
+theorem int_equivalence_add_cong (a b c d : Pair N N) : intEquivalence a b ∧ intEquivalence c d -> intEquivalence (a+c) (b+d) := by
+  intro h
+  rw [intEquivalence]
+  rw [intEquivalence, intEquivalence] at h
+  change (a.fst+c.fst)+(b.snd+d.snd) = (b.fst+d.fst)+(a.snd+c.snd)
+  rw [AddAssociative.add_associative]
+  rw [← AddAssociative.add_associative c.fst]
+  rw [AddCommutative.commutative c.fst]
+  rw [← AddAssociative.add_associative a.fst]
+  rw [← AddAssociative.add_associative a.fst]
+  rw [h.left]
+  rw [AddAssociative.add_associative]
+  rw [h.right]
+  rw [AddAssociative.add_associative]
+  rw [← AddAssociative.add_associative a.snd]
+  rw [AddCommutative.commutative a.snd]
+  rw [← AddAssociative.add_associative b.fst]
+  rw [← AddAssociative.add_associative b.fst]
+  rw [AddAssociative.add_associative]
+
+theorem intEquivalence_congruence : Congruence intEquivalence where
+  eq := intEquivalence_equivalence
+  add_cong := int_equivalence_add_cong
+  mul_cong a b c d h := by
+    rw[intEquivalence]
+    change (a.fst*c.fst+a.snd*c.snd)+(b.fst*d.snd+b.snd*d.fst) = (b.fst*d.fst+b.snd*d.snd)+(a.fst*c.snd+a.snd*c.fst)
+    rw [intEquivalence, intEquivalence] at h
+    have h1 : (a.fst + b.snd) * (c.fst + d.snd) + (b.fst + a.snd) * (d.fst + c.snd)
+      = (b.fst + a.snd) * (c.fst + d.snd) + (a.fst + b.snd) * (d.fst + c.snd)  := by
+      rw [h.left, h.right]
+
+    rw [Rig.left_distrib, Rig.left_distrib, Rig.left_distrib, Rig.left_distrib] at h1
+    rw [Rig.right_distrib, Rig.right_distrib, Rig.right_distrib, Rig.right_distrib] at h1
+    rw [Rig.right_distrib, Rig.right_distrib, Rig.right_distrib, Rig.right_distrib] at h1
+    rw [← AddAssociative.add_associative (b.fst*d.fst+a.snd*d.fst)] at h1
+    rw [AddCommutative.commutative _ (a.snd*c.snd)] at h1
+    rw [← AddAssociative.add_associative] at h1
+    rw [AddAssociative.add_associative (a.fst*c.fst+b.snd*c.fst)] at h1
+    rw [AddCommutative.commutative _ (a.snd*c.snd)] at h1
+    rw [AddAssociative.add_associative (a.fst*c.fst)] at h1
+    rw [← AddAssociative.add_associative (b.snd*c.fst)] at h1
+    rw [AddCommutative.commutative _ (a.snd*c.snd)] at h1
+    rw [← AddAssociative.add_associative (a.fst*c.fst)] at h1
+    rw [← AddAssociative.add_associative (a.fst*c.fst)] at h1
+    rw [AddAssociative.add_associative (b.fst*d.fst)] at h1
+    rw [AddCommutative.commutative _ (b.fst*c.snd)] at h1
+    rw [← AddAssociative.add_associative (b.fst*d.fst)] at h1
+    rw [← Rig.left_distrib b.fst] at h1
+    rw [← h.right] at h1
+    rw [Rig.left_distrib b.fst] at h1
+    rw [← AddCommutative.commutative (b.fst*d.snd)] at h1
+    rw [AddAssociative.add_associative (b.fst*d.snd)] at h1
+    rw [AddAssociative.add_associative] at h1
+    rw [← AddAssociative.add_associative (a.fst*d.snd+b.snd*d.snd)] at h1
+    rw [← AddCommutative.commutative (b.fst*d.snd)] at h1
+    rw [AddAssociative.add_associative _ (b.snd*c.fst)] at h1
+    rw [← AddAssociative.add_associative (b.snd*c.fst)] at h1
+    rw [← AddAssociative.add_associative (b.snd*c.fst) (b.fst*d.snd)] at h1
+    rw [← AddCommutative.commutative (b.fst*d.snd)] at h1
+
+
+/-
 theorem int_add_well_defined :∀a b c : Pair N N, intEquivalence b c
   -> Quot.mk intEquivalence { fst := a.fst+b.fst, snd := a.snd+b.snd } = Quot.mk intEquivalence { fst := a.fst+c.fst, snd := a.snd+c.snd } := by
     intro a b c h
@@ -329,7 +498,7 @@ instance : Ring Z where
         _             = AddIdent.zero*a+(AddIdent.zero*a+a0i) := by rw [AddAssociative.add_associative]
         _             = AddIdent.zero*a+AddIdent.zero := by rw [h_left]
         _             = AddIdent.zero*a := by rw [(AddIdent.zero_ident _).right]
-
+-/
 
 
 
