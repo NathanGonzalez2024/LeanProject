@@ -1,11 +1,12 @@
 import LeanProject.Structures
+import LeanProject.Ring
 
 namespace Project
 
 inductive N : Type
   | zero : N
   | succ : N -> N
-  deriving BEq
+  deriving BEq, Inhabited
 
 def recurse : (N -> N) -> N -> N -> N -> N
 | _, base, _, N.zero   => base
@@ -211,6 +212,20 @@ instance : Semiring N where
         dsimp [recurse]
     }
 
+def leq_n : Relation N
+  | .zero,         _ => True
+  | _, .zero         => False
+  | .succ n, .succ m => leq_n n m
+
+infixl:20 "≤" => leq_n
+
+instance leq_n_decidable : (n m : N) -> Decidable (n ≤ m)
+  | .zero, _         => isTrue True.intro
+  | .succ _, .zero   => isFalse (fun h => h)
+  | .succ n, .succ m =>
+    match leq_n_decidable n m with
+    | isTrue h  => isTrue h
+    | isFalse h => isFalse h
 
 def Sequence {α : Type} := N -> α
 
