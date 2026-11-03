@@ -10,7 +10,6 @@ theorem p_and_p : P ∧ P <-> P := by
   · intro p; exact p.left
   · intro p; exact ⟨p, p⟩
 
-
 def Relation (α : Type u) : Type u := α -> α -> Prop
 
 variable {α : Type u} (r : Relation α)
@@ -30,6 +29,9 @@ variable {α : Type u} (r : Relation α)
 class Eq (α : Type u) where
   eq : Relation α
   eq_equivalent : Equivalence eq
+
+class Functor (f : Type u -> Type u) where
+  map : (a -> b) -> f a -> f b
 
 --Add Structures
 
@@ -89,15 +91,6 @@ class MulGroup (α : Type u) extends MulMonoid α, MulInvertible α
 
 class MulAbelianGroup (α : Type u) extends MulGroup α, MulCommutative α
 
-class Rig (α : Type u) extends AddMonoid α, AddCommutative α, MulMonoid α where
-  left_distrib  : ∀ a b c : α, a * (b + c) = a * b + a * c
-  right_distrib : ∀ a b c : α, (a + b) * c = a * c + b * c
-
-class Semiring (α : Type u) extends Rig α where
-  zero_absorbs : ∀ a : α, a * zero = zero ∧ zero * a = zero
-
-class Ring (α : Type u) extends Semiring α, AddInvertible α
-
 structure Pair (α : Type u) (β : Type u) where
   fst : α
   snd : β
@@ -113,35 +106,5 @@ theorem group_add_left_cancels [AddGroup α] (a : α) : a + b = a + c -> b = c :
     _ = (a1 + a) + c      := by rw [AddAssociative.add_associative]
     _ = AddIdent.zero + c := by rw [h_right]
     _ = c                 := by rw [(AddIdent.zero_ident c).left]
-
-theorem ring_zero_absorbs [Ring α] (a : α) : a * AddIdent.zero = AddIdent.zero ∧ AddIdent.zero * a = AddIdent.zero := by
-  constructor
-  ·
-    obtain ⟨a0i, h_left, h_right⟩ := AddInvertible.inverses (a*AddIdent.zero)
-    have h1 :
-      a*AddIdent.zero = a*AddIdent.zero + a*AddIdent.zero := by rw [← Rig.left_distrib, (AddIdent.zero_ident _).left]
-    symm
-    calc
-      AddIdent.zero = a*(AddIdent.zero:α)+a0i := by rw [h_left]
-      _             = (a*AddIdent.zero+a*AddIdent.zero)+a0i := by rw [← h1]
-      _             = a*AddIdent.zero+(a*AddIdent.zero+a0i) := by rw [AddAssociative.add_associative]
-      _             = a*AddIdent.zero+AddIdent.zero := by rw [h_left]
-      _             = a*AddIdent.zero := by rw [(AddIdent.zero_ident _).right]
-  ·
-    obtain ⟨a0i, h_left, h_right⟩ := AddInvertible.inverses (AddIdent.zero*a)
-    have h1 :
-      AddIdent.zero*a = AddIdent.zero*a + AddIdent.zero*a := by rw [← Rig.right_distrib, (AddIdent.zero_ident _).left]
-    symm
-    calc
-      AddIdent.zero = (AddIdent.zero:α)*a+a0i := by rw [h_left]
-      _             = (AddIdent.zero*a+AddIdent.zero*a)+a0i := by rw [← h1]
-      _             = AddIdent.zero*a+(AddIdent.zero*a+a0i) := by rw [AddAssociative.add_associative]
-      _             = AddIdent.zero*a+AddIdent.zero := by rw [h_left]
-      _             = AddIdent.zero*a := by rw [(AddIdent.zero_ident _).right]
-
-instance [Ring α] : Semiring α where
-  zero_absorbs := ring_zero_absorbs
-
-
 
 end Project
