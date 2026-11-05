@@ -10,6 +10,17 @@ theorem p_and_p : P ∧ P <-> P := by
   · intro p; exact p.left
   · intro p; exact ⟨p, p⟩
 
+theorem not_not_p : ¬¬P <-> P := by
+  constructor
+  · intro h
+    by_cases h1 : P
+    exact h1
+    contradiction
+  · intro h
+    by_cases h1 : ¬P
+    contradiction
+    exact h1
+
 def Relation (α : Type u) : Type u := α -> α -> Prop
 
 variable {α : Type u} (r : Relation α)
@@ -32,6 +43,12 @@ class Eq (α : Type u) where
 
 class Functor (f : Type u -> Type u) where
   map : (a -> b) -> f a -> f b
+
+class Applicative (t : Type u -> Type u) extends Functor t where
+  app : t (a -> b) -> t a -> t b
+
+infixl:50 "<*>" => Applicative.app
+infixl:60 "<$>" => Functor.map
 
 --Add Structures
 

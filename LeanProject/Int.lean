@@ -189,7 +189,6 @@ theorem intEquivalence_congruence : Congruence intEquivalence where
     have h1 : (a.fst + b.snd) * (c.fst + d.snd) + (b.fst + a.snd) * (d.fst + c.snd)
       = (b.fst + a.snd) * (c.fst + d.snd) + (a.fst + b.snd) * (d.fst + c.snd)  := by
       rw [h.left, h.right]
-
     rw [Rig.left_distrib, Rig.left_distrib, Rig.left_distrib, Rig.left_distrib] at h1
     rw [Rig.right_distrib, Rig.right_distrib, Rig.right_distrib, Rig.right_distrib] at h1
     rw [Rig.right_distrib, Rig.right_distrib, Rig.right_distrib, Rig.right_distrib] at h1
@@ -218,9 +217,8 @@ theorem intEquivalence_congruence : Congruence intEquivalence where
     rw [← AddAssociative.add_associative (b.snd*c.fst)] at h1
     rw [← AddAssociative.add_associative (b.snd*c.fst) (b.fst*d.snd)] at h1
     rw [← AddCommutative.commutative (b.fst*d.snd)] at h1
+    sorry
 
-
-/-
 theorem int_add_well_defined :∀a b c : Pair N N, intEquivalence b c
   -> Quot.mk intEquivalence { fst := a.fst+b.fst, snd := a.snd+b.snd } = Quot.mk intEquivalence { fst := a.fst+c.fst, snd := a.snd+c.snd } := by
     intro a b c h
@@ -498,7 +496,6 @@ instance : Ring Z where
         _             = AddIdent.zero*a+(AddIdent.zero*a+a0i) := by rw [AddAssociative.add_associative]
         _             = AddIdent.zero*a+AddIdent.zero := by rw [h_left]
         _             = AddIdent.zero*a := by rw [(AddIdent.zero_ident _).right]
--/
 
 
 
